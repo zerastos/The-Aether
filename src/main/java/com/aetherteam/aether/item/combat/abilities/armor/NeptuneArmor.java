@@ -16,7 +16,8 @@ public interface NeptuneArmor {
      * @see com.aetherteam.aether.event.listeners.abilities.ArmorAbilityListener#onEntityUpdate(LivingEvent.LivingTickEvent)
      */
     static void boostWaterSwimming(LivingEntity entity) {
-        if (EquipmentUtil.hasFullNeptuneSet(entity)) {
+        boolean fullSet = EquipmentUtil.hasFullNeptuneSet(entity);
+        if (fullSet) {
             if (entity.isInWaterOrBubble()) {
                 if (entity instanceof Player player) {
                     AetherPlayer.get(player).ifPresent((aetherPlayer) -> {
@@ -38,7 +39,7 @@ public interface NeptuneArmor {
                 }
             }
         }
-        if (!EquipmentUtil.hasFullNeptuneSet(entity) || !entity.isInWaterOrBubble()) {
+        if (!fullSet || !entity.isInWaterOrBubble()) {
             if (entity instanceof Player player) {
                 AetherPlayer.get(player).ifPresent((aetherPlayer) -> aetherPlayer.setNeptuneSubmergeLength(0.0));
             }

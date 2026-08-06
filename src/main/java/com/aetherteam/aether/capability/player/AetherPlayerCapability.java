@@ -283,22 +283,37 @@ public class AetherPlayerCapability implements AetherPlayer {
 	@Override
 	public void onUpdate() {
 		this.syncAfterJoin();
-		this.syncClients();
+		if (shouldSyncBetweenClients()) {
+			syncClients();
+		}
 		this.handleAetherPortal();
+		if (player.level().isClientSide()) {
+			this.tickDownProjectileImpact();
+			this.handleWingRotation();
+			ClientMoaSkinPerkData.INSTANCE.syncFromClient(player);
+			ClientHaloPerkData.INSTANCE.syncFromClient(player);
+			ClientDeveloperGlowPerkData.INSTANCE.syncFromClient(player);
+		} else {
+			this.handleRemoveDarts();
+			this.handleAttackCooldown();
+			if (this.performVampireHealing()) {
+				this.handleVampireHealing();
+			}
+			this.handleSavedHealth();
+			this.handleLifeShardModifier();
+		}
+
 		this.activateParachute();
-		this.handleRemoveDarts();
-		this.removeRemedyDuration();
-		this.tickDownProjectileImpact();
-		this.handleWingRotation();
-		this.handleAttackCooldown();
-		this.handleVampireHealing();
-		this.checkToRemoveAerbunny();
-		this.checkToRemoveCloudMinions();
-		this.handleSavedHealth();
-		this.handleLifeShardModifier();
-		ClientMoaSkinPerkData.INSTANCE.syncFromClient(this.getPlayer());
-		ClientHaloPerkData.INSTANCE.syncFromClient(this.getPlayer());
-		ClientDeveloperGlowPerkData.INSTANCE.syncFromClient(this.getPlayer());
+
+		if (this.remedyStartDuration > 0) {
+			this.removeRemedyDuration();
+		}
+		if (this.getMountedAerbunny() != null) {
+			this.checkToRemoveAerbunny();
+		}
+		if (!this.getCloudMinions().isEmpty()) {
+			this.checkToRemoveCloudMinions();
+		}
 	}
 
 	private void syncAfterJoin() {
@@ -415,27 +430,27 @@ public class AetherPlayerCapability implements AetherPlayer {
 	 */
 	private void activateParachute() {
 		Player player = this.getPlayer();
+		if (player.isCreative() || player.isShiftKeyDown() || player.isFallFlying() || player.isPassenger() || player.getDeltaMovement().y() >= -1.5) {
+			return;
+		}
 		Inventory inventory = this.getPlayer().getInventory();
+		if (!inventory.contains(AetherTags.Items.DEPLOYABLE_PARACHUTES)) {
+			return;
+		}
 		Level level = player.level();
-		if (!player.isCreative() && !player.isShiftKeyDown() && !player.isFallFlying() && !player.isPassenger()) {
-			if (player.getDeltaMovement().y() < -1.5) {
-				if (inventory.contains(AetherTags.Items.DEPLOYABLE_PARACHUTES)) {
-					for (ItemStack stack : inventory.items) {
-						if (stack.getItem() instanceof ParachuteItem parachuteItem) {
-							Parachute parachute = parachuteItem.getParachuteEntity().get().create(level);
-							if (parachute != null) {
-								parachute.setPos(player.getX(), player.getY() - 1.0, player.getZ());
-								parachute.setDeltaMovement(player.getDeltaMovement());
-								if (!level.isClientSide()) {
-									level.addFreshEntity(parachute);
-									player.startRiding(parachute);
-									stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(InteractionHand.MAIN_HAND));
-								}
-								parachute.spawnExplosionParticle();
-								break;
-							}
-						}
+		for (ItemStack stack : inventory.items) {
+			if (stack.getItem() instanceof ParachuteItem parachuteItem) {
+				Parachute parachute = parachuteItem.getParachuteEntity().get().create(level);
+				if (parachute != null) {
+					parachute.setPos(player.getX(), player.getY() - 1.0, player.getZ());
+					parachute.setDeltaMovement(player.getDeltaMovement());
+					if (!level.isClientSide()) {
+						level.addFreshEntity(parachute);
+						player.startRiding(parachute);
+						stack.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(InteractionHand.MAIN_HAND));
 					}
+					parachute.spawnExplosionParticle();
+					break;
 				}
 			}
 		}
@@ -445,6 +460,9 @@ public class AetherPlayerCapability implements AetherPlayer {
 	 * Slowly removes darts that are rendered as stuck on the player by {@link com.aetherteam.aether.client.renderer.player.layer.DartLayer}.
 	 */
 	private void handleRemoveDarts() {
+		if (this.getGoldenDartCount() <= 0 && this.getPoisonDartCount() <= 0 && this.getEnchantedDartCount() <= 0) {
+			return;
+		}
 		if (!this.getPlayer().level().isClientSide()) {
 			if (this.getGoldenDartCount() > 0) {
 				if (this.removeGoldenDartTime <= 0) {
@@ -611,16 +629,26 @@ public class AetherPlayerCapability implements AetherPlayer {
 	 * Sets up the attribute modifier for extra Life Shard hearts.
 	 */
 	private void handleLifeShardModifier() {
-		if (!this.getPlayer().level().isClientSide()) {
-			AttributeInstance health = this.getPlayer().getAttribute(Attributes.MAX_HEALTH);
-			AttributeModifier lifeShardHealth = this.getLifeShardHealthAttributeModifier();
-			if (health != null) {
-				if (health.hasModifier(lifeShardHealth)) {
-					health.removeModifier(lifeShardHealth);
-				}
-				health.addTransientModifier(lifeShardHealth);
-			}
+		if (this.getPlayer().level().isClientSide()) {
+			return;
 		}
+
+		AttributeInstance health = this.getPlayer().getAttribute(Attributes.MAX_HEALTH);
+		if (health == null) return;
+
+		AttributeModifier wanted = this.getLifeShardHealthAttributeModifier();
+		AttributeModifier existing = health.getModifier(LIFE_SHARD_HEALTH_ID);
+
+		if (existing != null && Double.compare(existing.getAmount(), wanted.getAmount()) == 0 && existing.getOperation() == wanted.getOperation()) {
+			return;
+		}
+
+		if (existing != null) {
+			health.removeModifier(existing);
+		}
+
+		// Preserve the existing zero-value marker behavior when lifeShards == 0.
+		health.addTransientModifier(wanted);
 	}
 
 	/**

@@ -5,6 +5,7 @@ import com.aetherteam.aether.event.hooks.CapabilityHooks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -40,6 +41,7 @@ public class AetherPlayerListener {
     @SubscribeEvent
     public static void onPlayerJoinLevel(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();
+        if (!(entity instanceof Player)) return;
         CapabilityHooks.AetherPlayerHooks.joinLevel(entity);
     }
 
@@ -47,9 +49,9 @@ public class AetherPlayerListener {
      * @see com.aetherteam.aether.event.hooks.CapabilityHooks.AetherPlayerHooks#update(LivingEntity)
      */
     @SubscribeEvent
-    public static void onPlayerUpdate(LivingEvent.LivingTickEvent event) {
-        LivingEntity livingEntity = event.getEntity();
-        CapabilityHooks.AetherPlayerHooks.update(livingEntity);
+    public static void onPlayerUpdate(TickEvent.PlayerTickEvent event) {
+        if (event.isCanceled() || event.phase != TickEvent.Phase.START) return;
+        CapabilityHooks.AetherPlayerHooks.update(event.player);
     }
 
     /**

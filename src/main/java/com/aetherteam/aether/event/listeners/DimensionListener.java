@@ -1,10 +1,12 @@
 package com.aetherteam.aether.event.listeners;
 
 import com.aetherteam.aether.Aether;
+import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.event.hooks.DimensionHooks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -73,11 +75,15 @@ public class DimensionListener {
      */
     @SubscribeEvent
     public static void onWorldTick(TickEvent.LevelTickEvent event) {
-        Level level = event.level;
-        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.END) {
-            DimensionHooks.tickTime(level);
-            DimensionHooks.checkEternalDayConfig(level);
+        if (event.side != LogicalSide.SERVER
+                || event.phase != TickEvent.Phase.END
+                || !event.level.dimensionType().effectsLocation()
+                .equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
+            return;
         }
+        Level level = event.level;
+        DimensionHooks.tickTime(level);
+        DimensionHooks.checkEternalDayConfig(level);
     }
 
     /**
@@ -96,6 +102,7 @@ public class DimensionListener {
     @SubscribeEvent
     public static void onPlayerTraveling(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
+        if (!(player instanceof ServerPlayer serverPlayer) || event.phase != TickEvent.Phase.END) return;
         DimensionHooks.travelling(player);
     }
 

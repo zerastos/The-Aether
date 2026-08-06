@@ -49,7 +49,7 @@ public interface PhoenixArmor {
                     entity.moveRelative(0.04F * defaultBoost, new Vec3(entity.xxa, entity.yya, entity.zza));
                 }
             }
-            if (entity.level() instanceof ServerLevel level) {
+            if (entity.level() instanceof ServerLevel level && entity.tickCount % 4 == 0) {
                 level.sendParticles(ParticleTypes.FLAME,
                         entity.getX() + (level.getRandom().nextGaussian() / 5.0),
                         entity.getY() + (level.getRandom().nextGaussian() / 3.0),

@@ -66,6 +66,11 @@ public class EntityListener {
     @SubscribeEvent
     public static void onRiderTick(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
+
+        if (event.phase != TickEvent.Phase.END || !player.level().isClientSide() || !player.isPassenger()) {
+            return;
+        }
+
         EntityHooks.launchMount(player);
     }
 
