@@ -30,7 +30,8 @@ public class AetherEntityTagData extends EntityTypeTagsProvider {
         this.tag(AetherTags.Entities.WHIRLWIND_UNAFFECTED).addTag(Tags.EntityTypes.BOSSES).add(
                 AetherEntityTypes.AECHOR_PLANT.get(),
                 AetherEntityTypes.WHIRLWIND.get(),
-                AetherEntityTypes.EVIL_WHIRLWIND.get());
+                AetherEntityTypes.EVIL_WHIRLWIND.get(),
+                EntityType.SHULKER);
         this.tag(AetherTags.Entities.PIGS).add(
                 EntityType.PIG,
                 AetherEntityTypes.PHYG.get(),
