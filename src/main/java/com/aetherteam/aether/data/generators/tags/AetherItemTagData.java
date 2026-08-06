@@ -7,6 +7,7 @@ import com.aetherteam.aether.item.AetherItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -266,6 +267,10 @@ public class AetherItemTagData extends ItemTagsProvider {
                 AetherTags.Items.ACCESSORIES_SHIELDS);
 
         // Forge
+        this.tag(ItemTags.create(new ResourceLocation("forge", "stripped_logs")))
+                .add(AetherBlocks.STRIPPED_SKYROOT_LOG.get().asItem());
+        this.tag(ItemTags.create(new ResourceLocation("forge", "stripped_wood")))
+                .add(AetherBlocks.STRIPPED_SKYROOT_WOOD.get().asItem());
         this.tag(Tags.Items.BOOKSHELVES).add(AetherBlocks.SKYROOT_BOOKSHELF.get().asItem());
         this.tag(Tags.Items.FENCE_GATES_WOODEN).add(AetherBlocks.SKYROOT_FENCE_GATE.get().asItem());
         this.tag(Tags.Items.FENCES_WOODEN).add(AetherBlocks.SKYROOT_FENCE.get().asItem());
