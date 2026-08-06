@@ -557,7 +557,7 @@ public class AetherPlayerCapability implements AetherPlayer {
 		if (this.getMountedAerbunny() != null) {
 			Aerbunny aerbunny = this.getMountedAerbunny();
 			CompoundTag nbt = new CompoundTag();
-			aerbunny.save(nbt);
+			aerbunny.saveAsPassenger(nbt);
 			this.setMountedAerbunnyTag(nbt);
 			aerbunny.stopRiding();
 			aerbunny.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER);
