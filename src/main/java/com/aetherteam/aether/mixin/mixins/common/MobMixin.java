@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.theillusivec4.curios.api.CuriosApi;
 
 @Mixin(Mob.class)
 public class MobMixin {
@@ -20,7 +21,7 @@ public class MobMixin {
     @Inject(at = @At(value = "HEAD"), method = "canTakeItem(Lnet/minecraft/world/item/ItemStack;)Z", cancellable = true)
     private void canTakeItem(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         Mob mob = (Mob) (Object) this;
-        if (EntityHooks.canMobSpawnWithAccessories(mob)) {
+        if (EntityHooks.canMobSpawnWithAccessories(mob) && CuriosApi.getCuriosInventory(mob).isPresent()) {
             String identifier = AetherMixinHooks.getIdentifierForItem(mob, stack);
             if (!identifier.isEmpty()) {
                 ItemStack accessory = AetherMixinHooks.getItemByIdentifier(mob, identifier);
