@@ -27,7 +27,7 @@ public class DoubleDrops extends LootItemConditionalFunction {
 	protected ItemStack run(ItemStack stack, LootContext context) {
 		ItemStack toolStack = context.getParamOrNull(LootContextParams.TOOL);
 		BlockState blockState = context.getParamOrNull(LootContextParams.BLOCK_STATE);
-		if (toolStack.getItem() instanceof SkyrootTool skyrootTool) {
+		if (toolStack != null && toolStack.getItem() instanceof SkyrootTool skyrootTool) {
 			return skyrootTool.doubleDrops(stack, toolStack, blockState);
 		} else {
 			return stack;
