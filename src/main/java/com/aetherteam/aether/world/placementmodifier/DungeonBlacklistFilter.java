@@ -26,13 +26,14 @@ public class DungeonBlacklistFilter extends PlacementFilter {
         if (!(context.getLevel() instanceof WorldGenRegion)) {
             return false;
         }
+        /* Not safe to call during world generation, see #2873.
         StructureManager structureManager = ((WorldGenRegionAccessor)context.getLevel()).aether$getStructureManager();
         Registry<Structure> configuredStructureFeatureRegistry = context.getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE);
         for (Holder<Structure> structure : configuredStructureFeatureRegistry.getOrCreateTag(AetherTags.Structures.DUNGEONS)) {
             if (structureManager.getStructureAt(pos, structure.value()).isValid()) {
                 return false;
             }
-        }
+        }*/
         return true;
     }
 
