@@ -614,7 +614,7 @@ public class AetherPlayerCapability implements AetherPlayer {
 	private void handleSavedHealth() {
 		if (this.getSavedHealth() > 0.0F) {
 			AttributeInstance health = this.getPlayer().getAttribute(Attributes.MAX_HEALTH);
-			if (health != null && health.hasModifier(this.getLifeShardHealthAttributeModifier())) {
+			if (health != null && health.getModifier(LIFE_SHARD_HEALTH_ID) != null) {
 				if (this.getSavedHealth() >= this.getPlayer().getMaxHealth()) {
 					this.getPlayer().setHealth(this.getPlayer().getMaxHealth());
 				} else {
@@ -636,12 +636,14 @@ public class AetherPlayerCapability implements AetherPlayer {
 		AttributeInstance health = this.getPlayer().getAttribute(Attributes.MAX_HEALTH);
 		if (health == null) return;
 
-		AttributeModifier wanted = this.getLifeShardHealthAttributeModifier();
+		double wantedAmount = this.getLifeShardCount() * 2.0D;
 		AttributeModifier existing = health.getModifier(LIFE_SHARD_HEALTH_ID);
 
-		if (existing != null && Double.compare(existing.getAmount(), wanted.getAmount()) == 0 && existing.getOperation() == wanted.getOperation()) {
+		if (existing != null && Double.compare(existing.getAmount(), wantedAmount) == 0 && existing.getOperation() == AttributeModifier.Operation.ADDITION) {
 			return;
 		}
+
+		AttributeModifier wanted = this.getLifeShardHealthAttributeModifier();
 
 		if (existing != null) {
 			health.removeModifier(existing);
@@ -656,7 +658,7 @@ public class AetherPlayerCapability implements AetherPlayer {
 	 */
 	private void handleLogoutSavedHealth() {
 		AttributeInstance health = this.getPlayer().getAttribute(Attributes.MAX_HEALTH);
-		if (health != null && health.hasModifier(this.getLifeShardHealthAttributeModifier())) {
+		if (health != null && health.getModifier(LIFE_SHARD_HEALTH_ID) != null) {
 			this.setSavedHealth(this.getPlayer().getHealth());
 		}
 	}

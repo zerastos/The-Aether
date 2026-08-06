@@ -25,6 +25,8 @@ public class MoaRenderer extends MobRenderer<Moa, MoaModel> {
 	private static final ResourceLocation MOS_TEXTURE = new ResourceLocation(Aether.MODID, "textures/entity/mobs/moa/mos.png");
 	private static final ResourceLocation RAPTOR_TEXTURE = new ResourceLocation(Aether.MODID, "textures/entity/mobs/moa/raptor.png");
 
+	private static final UUID RAPTOR_UUID = UUID.fromString("c3e6871e-8e60-490a-8a8d-2bbe35ad1604");
+
 	public MoaRenderer(EntityRendererProvider.Context context) {
 		super(context, new MoaModel(context.bakeLayer(AetherModelLayers.MOA)), 0.7F);
 		this.addLayer(new MoaEmissiveLayer(this));
@@ -79,7 +81,7 @@ public class MoaRenderer extends MobRenderer<Moa, MoaModel> {
 			return MOS_TEXTURE;
 		}
 		if ((moa.hasCustomName() && moa.getName().getString().equals("Raptor__") && moa.getMoaType() == AetherMoaTypes.BLUE.get())
-				|| (moa.getRider() != null && moa.getRider().equals(UUID.fromString("c3e6871e-8e60-490a-8a8d-2bbe35ad1604")))) { // Raptor__
+				|| RAPTOR_UUID.equals(moa.getRider())) { // Raptor__
 			return RAPTOR_TEXTURE;
 		}
 		MoaType moaType = moa.getMoaType();

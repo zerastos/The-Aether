@@ -45,7 +45,9 @@ public class RecipeListener {
     @SubscribeEvent
     public static void onNeighborNotified(BlockEvent.NeighborNotifyEvent event) {
         LevelAccessor levelAccessor = event.getLevel();
+        if (levelAccessor == null) return;
         BlockPos blockPos = event.getPos();
+
         RecipeHooks.checkExistenceBanned(levelAccessor, blockPos);
         RecipeHooks.sendIcestoneFreezableUpdateEvent(levelAccessor, blockPos);
     }

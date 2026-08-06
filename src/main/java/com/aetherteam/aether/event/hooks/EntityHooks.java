@@ -1,5 +1,6 @@
 package com.aetherteam.aether.event.hooks;
 
+import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.AetherBlocks;
@@ -109,11 +110,9 @@ public class EntityHooks {
         if (entity instanceof Mob mob && mob.level() instanceof ServerLevel) {
             RandomSource random = mob.getRandom();
             EntityType<?> entityType = mob.getType();
-            String[] allSlots = {"hands", "necklace", "aether_gloves", "aether_pendant"};
-            String[] gloveSlots = {"hands", "aether_gloves"};
             if (entityType == EntityType.PIGLIN) {
                 if (mob instanceof AbstractPiglin abstractPiglin && abstractPiglin.isAdult()) {
-                    for (String identifier : allSlots) {
+                    for (String identifier : Aether.CURIOS_ALL_SLOTS) {
                         if (random.nextFloat() < 0.1F) {
                             equipAccessory(mob, identifier, ArmorMaterials.GOLD);
                         }
@@ -133,14 +132,14 @@ public class EntityHooks {
                 if (fullyArmored && random.nextInt(4) == 1) {
                     if (mob.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorItem armorItem) {
                         if (armorItem.getMaterial() instanceof ArmorMaterials armorMaterials) {
-                            for (String identifier : gloveSlots) {
+                            for (String identifier : Aether.CURIOS_GLOVE_SLOTS) {
                                 equipAccessory(mob, identifier, armorMaterials);
                             }
                         }
                     }
                 }
             }
-            enchantAccessories(mob, difficulty, allSlots);
+            enchantAccessories(mob, difficulty, Aether.CURIOS_ALL_SLOTS);
         }
     }
 

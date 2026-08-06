@@ -47,16 +47,24 @@ public abstract class AbstractPlacementBanRecipe<T, S extends Predicate<T>> impl
      * @return Whether the given object is banned from placement.
      */
     public boolean matches(Level level, BlockPos pos, T object) {
-        if (this.bypassBlock.isEmpty() || !this.bypassBlock.test(level.getBlockState(pos))) {
-            if (this.biomeKey != null) {
-                return this.getIngredient().test(object) && level.getBiome(pos).is(this.biomeKey);
-            } else if (this.biomeTag != null) {
-                return this.getIngredient().test(object) && level.getBiome(pos).is(this.biomeTag);
-            } else {
-                return this.getIngredient().test(object);
-            }
+        // Reject almost every NeighborNotifyEvent immediately.
+        if (!this.getIngredient().test(object)) {
+            return false;
         }
-        return false;
+
+        // Only inspect the bypass block for an object that can match this recipe.
+        if (!this.bypassBlock.isEmpty()
+                && this.bypassBlock.test(level.getBlockState(pos))) {
+            return false;
+        }
+
+        if (this.biomeKey != null) {
+            return level.getBiome(pos).is(this.biomeKey);
+        }
+        if (this.biomeTag != null) {
+            return level.getBiome(pos).is(this.biomeTag);
+        }
+        return true;
     }
 
     @Nullable
