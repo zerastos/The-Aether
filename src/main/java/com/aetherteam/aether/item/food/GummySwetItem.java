@@ -82,6 +82,6 @@ public class GummySwetItem extends Item implements ConsumableItem {
 	 */
 	@Override
 	public boolean isEdible() {
-		return !AetherConfig.SERVER.healing_gummy_swets.get();
+		return !AetherConfig.SERVER_SPEC.isLoaded() || !AetherConfig.SERVER.healing_gummy_swets.get();
 	}
 }
