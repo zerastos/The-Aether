@@ -59,6 +59,8 @@ import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = Aether.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class AetherRenderers {
+    private static final String[] RENDERER_TYPES = new String[]{"default", "slim"};
+
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(AetherBlockEntityTypes.SKYROOT_BED.get(), SkyrootBedRenderer::new);
@@ -207,15 +209,18 @@ public class AetherRenderers {
     @SubscribeEvent
     public static void addEntityLayers(EntityRenderersEvent.AddLayers event) {
         EntityRenderDispatcher renderDispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        String[] types = new String[]{"default", "slim"};
-        for (String type : types) {
+        for (String type : RENDERER_TYPES) {
             PlayerRenderer playerRenderer = event.getSkin(type);
             if (playerRenderer != null) {
-                playerRenderer.addLayer(new DeveloperGlowLayer<>(playerRenderer));
+                if (Aether.SUPPORTER_PERKS_ENABLED) {
+                    playerRenderer.addLayer(new DeveloperGlowLayer<>(playerRenderer));
+                }
                 playerRenderer.addLayer(new DartLayer<>(renderDispatcher, playerRenderer, (entity) -> new GoldenDart(AetherEntityTypes.GOLDEN_DART.get(), entity.level()), AetherPlayer::getGoldenDartCount, 1.0F));
                 playerRenderer.addLayer(new DartLayer<>(renderDispatcher, playerRenderer, (entity) -> new PoisonDart(AetherEntityTypes.POISON_DART.get(), entity.level()), AetherPlayer::getPoisonDartCount, 2.0F));
                 playerRenderer.addLayer(new DartLayer<>(renderDispatcher, playerRenderer, (entity) -> new EnchantedDart(AetherEntityTypes.ENCHANTED_DART.get(), entity.level()), AetherPlayer::getEnchantedDartCount, 3.0F));
-                playerRenderer.addLayer(new PlayerHaloLayer<>(playerRenderer, Minecraft.getInstance().getEntityModels()));
+                if (Aether.SUPPORTER_PERKS_ENABLED) {
+                    playerRenderer.addLayer(new PlayerHaloLayer<>(playerRenderer, Minecraft.getInstance().getEntityModels()));
+                }
                 playerRenderer.addLayer(new PlayerWingsLayer<>(playerRenderer, Minecraft.getInstance().getEntityModels()));
             }
         }

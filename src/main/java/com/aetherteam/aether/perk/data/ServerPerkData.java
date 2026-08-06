@@ -97,6 +97,7 @@ public class ServerPerkData<T> {
      * @param player The {@link Player} to send the packet to.
      */
     public void syncFromServer(Player player) {
+        if (!Aether.SUPPORTER_PERKS_ENABLED) return;
         if (player instanceof ServerPlayer serverPlayer) {
             PacketRelay.sendToPlayer(AetherPacketHandler.INSTANCE, this.getSyncPacket(this.getServerPerkData(serverPlayer.getServer())), serverPlayer); // Send to client.
         }
@@ -110,6 +111,7 @@ public class ServerPerkData<T> {
      * @param perk The perk data type.
      */
     public void applyPerkWithVerification(MinecraftServer server, UUID uuid, T perk) {
+        if (!Aether.SUPPORTER_PERKS_ENABLED) return;
         Map<UUID, User> storedUsers = UserData.Server.getStoredUsers();
         if (storedUsers.containsKey(uuid)) { // Checks if User exists.
             User user = storedUsers.get(uuid);
@@ -130,6 +132,7 @@ public class ServerPerkData<T> {
      * @param uuid The {@link UUID} of the player.
      */
     public void removePerk(MinecraftServer server, UUID uuid) {
+        if (!Aether.SUPPORTER_PERKS_ENABLED) return;
         PacketRelay.sendToAll(AetherPacketHandler.INSTANCE, this.getRemovePacket(uuid)); // Send to clients.
         this.removeSavedData(server, uuid); // Save to world.
     }

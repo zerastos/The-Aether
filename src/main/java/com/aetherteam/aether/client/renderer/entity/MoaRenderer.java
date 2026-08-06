@@ -73,10 +73,13 @@ public class MoaRenderer extends MobRenderer<Moa, MoaModel> {
 	}
 
 	public static ResourceLocation getTexture(Moa moa) {
-		ResourceLocation moaSkin = getMoaSkinLocation(moa);
-		if (moaSkin != null) {
-			return moaSkin;
+		if (Aether.SUPPORTER_PERKS_ENABLED) {
+			ResourceLocation moaSkin = getMoaSkinLocation(moa);
+			if (moaSkin != null) {
+				return moaSkin;
+			}
 		}
+
 		if (moa.hasCustomName() && moa.getName().getString().equals("Mos")) {
 			return MOS_TEXTURE;
 		}

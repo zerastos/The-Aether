@@ -241,11 +241,13 @@ public class AetherPlayerCapability implements AetherPlayer {
 	public void onLogin() {
 		this.handleGivePortal();
 		this.remountAerbunny();
-		this.handlePatreonMessage();
 		this.shouldSyncAfterJoin = true;
-		ServerPerkData.MOA_SKIN_INSTANCE.syncFromServer(this.getPlayer());
-		ServerPerkData.HALO_INSTANCE.syncFromServer(this.getPlayer());
-		ServerPerkData.DEVELOPER_GLOW_INSTANCE.syncFromServer(this.getPlayer());
+		if (Aether.SUPPORTER_PERKS_ENABLED) {
+			this.handlePatreonMessage();
+			ServerPerkData.MOA_SKIN_INSTANCE.syncFromServer(this.getPlayer());
+			ServerPerkData.HALO_INSTANCE.syncFromServer(this.getPlayer());
+			ServerPerkData.DEVELOPER_GLOW_INSTANCE.syncFromServer(this.getPlayer());
+		}
 	}
 
 	/**
@@ -254,7 +256,9 @@ public class AetherPlayerCapability implements AetherPlayer {
 	@Override
 	public void onJoinLevel() {
 		if (this.getPlayer().level().isClientSide() && player.isLocalPlayer()) {
-			CustomizationsOptions.INSTANCE.load();
+			if (Aether.SUPPORTER_PERKS_ENABLED) {
+				CustomizationsOptions.INSTANCE.load();
+			}
 			this.setSynched(Direction.SERVER, "setShouldSyncBetweenClients", true);
 		}
 	}
@@ -290,9 +294,11 @@ public class AetherPlayerCapability implements AetherPlayer {
 		if (player.level().isClientSide()) {
 			this.tickDownProjectileImpact();
 			this.handleWingRotation();
-			ClientMoaSkinPerkData.INSTANCE.syncFromClient(player);
-			ClientHaloPerkData.INSTANCE.syncFromClient(player);
-			ClientDeveloperGlowPerkData.INSTANCE.syncFromClient(player);
+			if (Aether.SUPPORTER_PERKS_ENABLED) {
+				ClientMoaSkinPerkData.INSTANCE.syncFromClient(player);
+				ClientHaloPerkData.INSTANCE.syncFromClient(player);
+				ClientDeveloperGlowPerkData.INSTANCE.syncFromClient(player);
+			}
 		} else {
 			this.handleRemoveDarts();
 			this.handleAttackCooldown();

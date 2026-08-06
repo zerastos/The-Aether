@@ -84,6 +84,7 @@ public class Aether {
 
     public static final TriviaGenerator TRIVIA_READER = new TriviaGenerator();
 
+    public static final boolean SUPPORTER_PERKS_ENABLED = false;
     public static final String[] CURIOS_ALL_SLOTS = {"hands", "necklace", "aether_gloves", "aether_pendant"};
     public static final String[] CURIOS_GLOVE_SLOTS = {"hands", "aether_gloves"};
 
