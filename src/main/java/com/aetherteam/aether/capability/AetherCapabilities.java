@@ -16,6 +16,7 @@ import com.aetherteam.aether.capability.time.AetherTimeCapability;
 import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.nitrogen.capability.CapabilityProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,6 +43,12 @@ public class AetherCapabilities {
 	public static final Capability<DroppedItem> DROPPED_ITEM_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() { });
 	public static final Capability<AetherTime> AETHER_TIME_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() { });
 
+	private static final ResourceLocation RESOURCE_CAPABILITY_PLAYER = new ResourceLocation(Aether.MODID, "aether_player");
+	private static final ResourceLocation RESOURCE_CAPABILITY_MOB_ACCESSORY = new ResourceLocation(Aether.MODID, "mob_accessory");
+	private static final ResourceLocation RESOURCE_CAPABILITY_PHOENIX_ARROW = new ResourceLocation(Aether.MODID, "phoenix_arrow");
+	private static final ResourceLocation RESOURCE_CAPABILITY_LIGHTNING_BOLT = new ResourceLocation(Aether.MODID, "lightning_tracker");
+	private static final ResourceLocation RESOURCE_CAPABILITY_DROPPED_ITEM = new ResourceLocation(Aether.MODID, "dropped_item");
+
 	@SubscribeEvent
 	public static void register(RegisterCapabilitiesEvent event) {
 		event.register(AetherPlayer.class);
@@ -58,19 +65,16 @@ public class AetherCapabilities {
 		public static void attachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
 			if (event.getObject() instanceof LivingEntity livingEntity) {
 				if (livingEntity instanceof Player player) {
-					event.addCapability(new ResourceLocation(Aether.MODID, "aether_player"), new CapabilityProvider(AetherCapabilities.AETHER_PLAYER_CAPABILITY, new AetherPlayerCapability(player)));
+					event.addCapability(RESOURCE_CAPABILITY_PLAYER, new CapabilityProvider(AetherCapabilities.AETHER_PLAYER_CAPABILITY, new AetherPlayerCapability(player)));
 				} else if (livingEntity instanceof Mob mob) {
-					event.addCapability(new ResourceLocation(Aether.MODID, "mob_accessory"), new CapabilityProvider(AetherCapabilities.MOB_ACCESSORY_CAPABILITY, new MobAccessoryCapability(mob)));
+					event.addCapability(RESOURCE_CAPABILITY_MOB_ACCESSORY, new CapabilityProvider(AetherCapabilities.MOB_ACCESSORY_CAPABILITY, new MobAccessoryCapability(mob)));
 				}
-			}
-			if (event.getObject() instanceof AbstractArrow abstractArrow) {
-				event.addCapability(new ResourceLocation(Aether.MODID, "phoenix_arrow"), new CapabilityProvider(AetherCapabilities.PHOENIX_ARROW_CAPABILITY, new PhoenixArrowCapability(abstractArrow)));
-			}
-			if (event.getObject() instanceof LightningBolt lightningBolt) {
-				event.addCapability(new ResourceLocation(Aether.MODID, "lightning_tracker"), new CapabilityProvider(AetherCapabilities.LIGHTNING_TRACKER_CAPABILITY, new LightningTrackerCapability(lightningBolt)));
-			}
-			if (event.getObject() instanceof ItemEntity itemEntity) {
-				event.addCapability(new ResourceLocation(Aether.MODID, "dropped_item"), new CapabilityProvider(AetherCapabilities.DROPPED_ITEM_CAPABILITY, new DroppedItemCapability(itemEntity)));
+			} else if (event.getObject() instanceof AbstractArrow abstractArrow) {
+				event.addCapability(RESOURCE_CAPABILITY_PHOENIX_ARROW, new CapabilityProvider(AetherCapabilities.PHOENIX_ARROW_CAPABILITY, new PhoenixArrowCapability(abstractArrow)));
+			} else if (event.getObject() instanceof LightningBolt lightningBolt) {
+				event.addCapability(RESOURCE_CAPABILITY_LIGHTNING_BOLT, new CapabilityProvider(AetherCapabilities.LIGHTNING_TRACKER_CAPABILITY, new LightningTrackerCapability(lightningBolt)));
+			} else if (event.getObject() instanceof ItemEntity itemEntity) {
+				event.addCapability(RESOURCE_CAPABILITY_DROPPED_ITEM, new CapabilityProvider(AetherCapabilities.DROPPED_ITEM_CAPABILITY, new DroppedItemCapability(itemEntity)));
 			}
 		}
 

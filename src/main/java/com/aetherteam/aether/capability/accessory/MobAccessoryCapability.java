@@ -9,7 +9,7 @@ import java.util.Map;
 public class MobAccessoryCapability implements MobAccessory {
     private final Mob mob;
 
-    private final Map<String, Float> accessoryDropChances = new HashMap<>(Map.ofEntries(
+    private static final Map<String, Float> accessoryDropChances = new HashMap<>(Map.ofEntries(
             Map.entry("hands", 0.085F),
             Map.entry("necklace", 0.085F),
             Map.entry("aether_gloves", 0.085F),
