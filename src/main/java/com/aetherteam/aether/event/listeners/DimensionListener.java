@@ -1,6 +1,7 @@
 package com.aetherteam.aether.event.listeners;
 
 import com.aetherteam.aether.Aether;
+import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.event.hooks.DimensionHooks;
 import net.minecraft.core.BlockPos;
@@ -8,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -44,27 +46,20 @@ public class DimensionListener {
      */
     @SubscribeEvent
     public static void onInteractWithPortalFrame(PlayerInteractEvent.RightClickBlock event) {
-        Player player = event.getEntity();
-        Level level = event.getLevel();
-        BlockPos blockPos = event.getPos();
-        Direction direction = event.getFace();
         ItemStack itemStack = event.getItemStack();
-        InteractionHand interactionHand = event.getHand();
-        if (DimensionHooks.createPortal(player, level, blockPos, direction, itemStack, interactionHand)) {
-            event.setCanceled(true);
+        if (!itemStack.is(AetherTags.Items.AETHER_PORTAL_ACTIVATION_ITEMS)) {
+            return;
         }
-    }
 
-    /**
-     * @see DimensionHooks#detectWaterInFrame(LevelAccessor, BlockPos, BlockState, FluidState)
-     */
-    @SubscribeEvent
-    public static void onWaterExistsInsidePortalFrame(BlockEvent.NeighborNotifyEvent event) {
-        LevelAccessor level = event.getLevel();
-        BlockPos blockPos = event.getPos();
-        BlockState blockState = level.getBlockState(blockPos);
-        FluidState fluidState = level.getFluidState(blockPos);
-        if (DimensionHooks.detectWaterInFrame(level, blockPos, blockState, fluidState)) {
+        if (DimensionHooks.createPortal(
+                event.getEntity(),
+                event.getLevel(),
+                event.getPos(),
+                event.getFace(),
+                itemStack,
+                event.getHand())
+        ) {
+            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
             event.setCanceled(true);
         }
     }
@@ -124,17 +119,6 @@ public class DimensionListener {
         Long time = DimensionHooks.finishSleep(level, event.getNewTime());
         if (time != null) {
             event.setTimeAddition(time);
-        }
-    }
-
-    /**
-     * @see DimensionHooks#isEternalDay(Player)
-     */
-    @SubscribeEvent
-    public static void onTriedToSleep(SleepingTimeCheckEvent event) {
-        Player player = event.getEntity();
-        if (DimensionHooks.isEternalDay(player)) {
-            event.setResult(Event.Result.DENY);
         }
     }
 }

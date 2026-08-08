@@ -1,39 +1,25 @@
 package com.aetherteam.aether.event.hooks;
 
-import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherGameEvents;
-import com.aetherteam.aether.AetherTags;
-import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.block.FreezingBlock;
 import com.aetherteam.aether.blockentity.IcestoneBlockEntity;
 import com.aetherteam.aether.event.FreezeEvent;
 import com.aetherteam.aether.event.PlacementBanEvent;
 import com.aetherteam.aether.event.PlacementConvertEvent;
 import com.aetherteam.aether.recipe.AetherRecipeTypes;
-import com.aetherteam.aether.recipe.recipes.ban.BlockBanRecipe;
-import com.aetherteam.aether.recipe.recipes.ban.ItemBanRecipe;
 import com.aetherteam.aether.recipe.recipes.block.PlacementConversionRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BedPart;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 
@@ -53,28 +39,6 @@ public class RecipeHooks {
      * @see com.aetherteam.aether.event.listeners.RecipeListener#checkBanned(PlayerInteractEvent.RightClickBlock)
      */
     public static boolean checkInteractionBanned(Player player, Level level, BlockPos pos, Direction face, ItemStack stack, BlockState state, boolean spawnParticles) {
-        if (isItemPlacementBanned(level, pos, face, stack, spawnParticles)) {
-            player.displayClientMessage(Component.translatable("aether.banned_item", stack.getItem().getName(stack)), true);
-            return true;
-        }
-        if (level.getBiome(pos).is(AetherTags.Biomes.ULTRACOLD) && AetherConfig.SERVER.enable_bed_explosions.get()) { // Explodes beds in the Aether if the config for it is enabled.
-            if (state.is(BlockTags.BEDS) && state.getBlock() != AetherBlocks.SKYROOT_BED.get()) {
-                if (!level.isClientSide()) {
-                    if (state.getValue(BedBlock.PART) != BedPart.HEAD) {
-                        pos = pos.relative(state.getValue(BedBlock.FACING));
-                        state = level.getBlockState(pos);
-                    }
-                    BlockPos blockpos = pos.relative(state.getValue(BedBlock.FACING).getOpposite());
-                    if (level.getBlockState(blockpos).is(BlockTags.BEDS) && level.getBlockState(blockpos).getBlock() != AetherBlocks.SKYROOT_BED.get()) {
-                        level.removeBlock(blockpos, false);
-                    }
-                    Vec3 vec3 = pos.getCenter();
-                    level.explode(null, level.damageSources().badRespawnPointExplosion(vec3), null, (double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 5.0F, true, Level.ExplosionInteraction.BLOCK);
-                }
-                player.swing(InteractionHand.MAIN_HAND);
-                return true;
-            }
-        }
         return false;
     }
 
@@ -88,13 +52,6 @@ public class RecipeHooks {
      * @return Whether the interaction is banned, as a {@link Boolean}.
      */
     public static boolean isItemPlacementBanned(Level level, BlockPos pos, Direction face, ItemStack stack, boolean spawnParticles) {
-        for (Recipe<?> recipe : level.getRecipeManager().getAllRecipesFor(AetherRecipeTypes.ITEM_PLACEMENT_BAN.get())) {
-            if (recipe instanceof ItemBanRecipe banRecipe) {
-                if (banRecipe.banItem(level, pos, face, stack, spawnParticles)) {
-                    return true;
-                }
-            }
-        }
         return false;
     }
 
@@ -105,17 +62,7 @@ public class RecipeHooks {
      * @see com.aetherteam.aether.event.listeners.RecipeListener#onNeighborNotified(BlockEvent.NeighborNotifyEvent)
      */
     public static void checkExistenceBanned(LevelAccessor levelAccessor, BlockPos pos) {
-        if (levelAccessor instanceof Level level) {
-            BlockState state = levelAccessor.getBlockState(pos);
-            if (RecipeHooks.isBlockPlacementBanned(level, pos, state)) { // Check if block can't exist.
-                level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                if (state.getBlock().asItem() != Items.AIR) {
-                    Block.dropResources(state, level, pos); // Drop block if it can be dropped as an item.
-                }
-            } else { // Check if block should be replaced.
-                RecipeHooks.isBlockPlacementConvertable(level, pos, state);
-            }
-        }
+
     }
 
     /**
@@ -126,15 +73,6 @@ public class RecipeHooks {
      * @return Whether the placement is banned, as a {@link Boolean}.
      */
     private static boolean isBlockPlacementBanned(Level level, BlockPos pos, BlockState state) {
-        if (!level.isClientSide()) {
-            for (Recipe<?> recipe : level.getRecipeManager().getAllRecipesFor(AetherRecipeTypes.BLOCK_PLACEMENT_BAN.get())) {
-                if (recipe instanceof BlockBanRecipe banRecipe) {
-                    if (banRecipe.banBlock(level, pos, state)) {
-                        return true;
-                    }
-                }
-            }
-        }
         return false;
     }
 

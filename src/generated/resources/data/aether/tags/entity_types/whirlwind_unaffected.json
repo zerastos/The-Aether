@@ -1,6 +1,9 @@
 {
   "values": [
+    "#forge:bosses",
     "aether:aechor_plant",
-    "#forge:bosses"
+    "aether:whirlwind",
+    "aether:evil_whirlwind",
+    "minecraft:shulker"
   ]
 }

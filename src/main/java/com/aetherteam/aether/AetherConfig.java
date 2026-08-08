@@ -147,7 +147,7 @@ public class AetherConfig {
             disable_eternal_day = builder
                     .comment("Removes eternal day so that the Aether has a normal daylight cycle even before defeating the Sun Spirit")
                     .translation("config.aether.server.modpack.disable_eternal_day")
-                    .define("Disables eternal day", false);
+                    .define("Disables eternal day", true);
             normal_length_aether_time = builder
                     .comment("Sets the Aether's time cycle to be the same length as the Overworld's")
                     .translation("config.aether.server.modpack.normal_length_aether_time")
@@ -232,7 +232,7 @@ public class AetherConfig {
             enable_immersive_portals_compatibility = builder
                     .comment("Enables code and data pack features used for modifying Aether Portals when Immersive Portals is installed")
                     .translation("config.aether.common.modpack.enable_immersive_portals_compatibility")
-                    .define("Enables Immersive Portals compatibility", true);
+                    .define("Enables Immersive Portals compatibility", false);
             builder.pop();
         }
     }

@@ -36,7 +36,7 @@ public class GuiListener {
 			if (inventoryAccessoryButton != null) {
 				event.addListener(inventoryAccessoryButton);
 			}
-		} else {
+		} else if (Aether.SUPPORTER_PERKS_ENABLED) {
 			GridLayout layout = GuiHooks.setupPerksButtons(screen);
 			if (layout != null) {
 				layout.visitWidgets(event::addListener);
