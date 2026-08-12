@@ -13,6 +13,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -32,19 +33,20 @@ public class ArmorAbilityListener {
     public static void onPlayerUpdate(TickEvent.PlayerTickEvent event) {
         if (event.isCanceled() || event.phase != TickEvent.Phase.START)  return;
         Player player = event.player;
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
 
-        if (player.getItemBySlot(EquipmentSlot.HEAD).is(AetherItems.VALKYRIE_HELMET.get())) {
+        if (helmet.is(AetherItems.VALKYRIE_HELMET.get())) {
             ValkyrieArmor.handleFlight(player);
         }
 
         AetherPlayer.get(player).ifPresent(aetherPlayer -> {
             // These must still run once after removing the set so the ramp can reset.
 
-            if (player.getItemBySlot(EquipmentSlot.HEAD).is(AetherItems.NEPTUNE_HELMET.get()) || aetherPlayer.getNeptuneSubmergeLength() > 0.0) {
+            if (helmet.is(AetherItems.NEPTUNE_HELMET.get()) || aetherPlayer.getNeptuneSubmergeLength() > 0.0) {
                 NeptuneArmor.boostWaterSwimming(player);
             }
 
-            if (player.getItemBySlot(EquipmentSlot.HEAD).is(AetherItems.PHOENIX_HELMET.get()) || aetherPlayer.getPhoenixSubmergeLength() > 0.0) {
+            if (helmet.is(AetherItems.PHOENIX_HELMET.get()) || aetherPlayer.getPhoenixSubmergeLength() > 0.0) {
                 PhoenixArmor.boostLavaSwimming(player);
             }
 
