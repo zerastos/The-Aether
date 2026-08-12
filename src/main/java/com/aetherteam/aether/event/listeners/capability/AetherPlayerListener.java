@@ -50,7 +50,7 @@ public class AetherPlayerListener {
      */
     @SubscribeEvent
     public static void onPlayerUpdate(TickEvent.PlayerTickEvent event) {
-        if (event.isCanceled() || event.phase != TickEvent.Phase.START) return;
+        if (event.phase != TickEvent.Phase.START) return;
         CapabilityHooks.AetherPlayerHooks.update(event.player);
     }
 

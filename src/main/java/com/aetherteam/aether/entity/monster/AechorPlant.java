@@ -6,11 +6,13 @@ import com.aetherteam.aether.effect.AetherEffects;
 import com.aetherteam.aether.entity.projectile.PoisonNeedle;
 import com.aetherteam.aether.item.AetherItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
@@ -136,28 +139,40 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
      * @return Whether the blocks were found in the radius, as a {@link Boolean}.
      */
     public static boolean inRadiusOfFlowers(LevelAccessor level, BlockPos pos, int radius, int radiusEnchanted) {
-        for (ChunkPos chunk : ChunkPos.rangeClosed(new ChunkPos(pos), radiusEnchanted).toList()) {
-            ChunkAccess chunkAccess = level.getChunk(chunk.x, chunk.z, ChunkStatus.FULL, false);
-            if (chunkAccess != null) {
-                for (BlockPos blockEntityPos : chunkAccess.getBlockEntitiesPos()) {
-                    if (blockEntityPos.distSqr(pos) <= radius * radius) {
-                        BlockEntity blockEntity = level.getBlockEntity(blockEntityPos);
-                        if (blockEntity != null) {
-                            if (blockEntity.getBlockState().is(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_DETERRENT)) {
-                                return true;
-                            }
-                        }
-                    } else if (blockEntityPos.distSqr(pos) <= radiusEnchanted * radiusEnchanted) {
-                        BlockEntity blockEntity = level.getBlockEntity(blockEntityPos);
-                        if (blockEntity != null) {
-                            if (blockEntity.getBlockState().is(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_DETERRENT) && level.getBlockState(blockEntityPos.below()).is(AetherTags.Blocks.ENCHANTED_GRASS)) {
-                                return true;
-                            }
-                        }
+        if (!(level instanceof ServerLevel serverLevel) || radius <= 0 || radiusEnchanted <= 0) return false;
+
+        int searchRadius = Math.max(radius, radiusEnchanted);
+
+        int minChunkX = SectionPos.blockToSectionCoord(pos.getX() - searchRadius);
+        int maxChunkX = SectionPos.blockToSectionCoord(pos.getX() + searchRadius);
+        int minChunkZ = SectionPos.blockToSectionCoord(pos.getZ() - searchRadius);
+        int maxChunkZ = SectionPos.blockToSectionCoord(pos.getZ() + searchRadius);
+
+        double radiusSquared = (double) radius * radius;
+        double searchRadiusSquared = (double) searchRadius * searchRadius;
+
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX) {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ) {
+                ChunkAccess chunk = serverLevel.getChunkSource().getChunkNow(chunkX, chunkZ);
+                if (chunk == null) continue;
+
+                for (BlockPos flowerPos : chunk.getBlockEntitiesPos()) {
+                    double distanceSquared = flowerPos.distSqr(pos);
+
+                    if (distanceSquared > searchRadiusSquared) continue;
+
+                    BlockState flowerState = chunk.getBlockState(flowerPos);
+
+                    if (!flowerState.is(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_DETERRENT)) continue;
+
+                    if (distanceSquared <= radiusSquared ||
+                        chunk.getBlockState(flowerPos.below()).is(AetherTags.Blocks.ENCHANTED_GRASS)) {
+                        return true;
                     }
                 }
             }
         }
+
         return false;
     }
 

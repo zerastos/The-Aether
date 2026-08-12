@@ -8,6 +8,7 @@ import com.aetherteam.aether.entity.MountableMob;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.EquipmentUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.entity.EntityTypeTest;
@@ -133,23 +135,47 @@ public class Swet extends Slime implements MountableMob {
      * @return Whether the blocks were found in the radius, as a {@link Boolean}.
      */
     private static boolean inRadiusOfBanner(LevelAccessor level, BlockPos pos, int radius) {
-        for (ChunkPos chunk : ChunkPos.rangeClosed(new ChunkPos(pos), radius).toList()) {
-            ChunkAccess chunkAccess = level.getChunk(chunk.x, chunk.z, ChunkStatus.FULL, false);
-            if (chunkAccess != null) {
-                for (BlockPos blockEntityPos : chunkAccess.getBlockEntitiesPos()) {
-                    if (blockEntityPos.distSqr(pos) <= radius * radius) {
-                        BlockEntity blockEntity = level.getBlockEntity(blockEntityPos);
-                        if (blockEntity instanceof BannerBlockEntity bannerBlockEntity && blockEntity.getBlockState().is(Blocks.BLACK_BANNER)) {
-                            ItemStack bannerStack = bannerBlockEntity.getItem();
-                            bannerStack.hideTooltipPart(ItemStack.TooltipPart.ADDITIONAL);
-                            if (ItemStack.matches(bannerStack, AetherItems.createSwetBannerItemStack())) {
-                                return true;
-                            }
-                        }
+        if (!(level instanceof ServerLevel serverLevel) || radius <= 0) return false;
+
+        int minChunkX = SectionPos.blockToSectionCoord(pos.getX() - radius);
+        int maxChunkX = SectionPos.blockToSectionCoord(pos.getX() + radius);
+        int minChunkZ = SectionPos.blockToSectionCoord(pos.getZ() - radius);
+        int maxChunkZ = SectionPos.blockToSectionCoord(pos.getZ() + radius);
+
+        double radiusSquared = (double) radius * radius;
+        ItemStack swetBannerStack = AetherItems.createSwetBannerItemStack();
+
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; ++chunkX) {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ) {
+                ChunkAccess chunk = serverLevel.getChunkSource().getChunkNow(chunkX, chunkZ);
+                if (chunk == null) continue;
+
+                for (BlockPos bannerPos : chunk.getBlockEntitiesPos()) {
+                    double distanceSquared = bannerPos.distSqr(pos);
+
+                    if (distanceSquared > radiusSquared) continue;
+
+                    BlockState bannerState = chunk.getBlockState(bannerPos);
+
+                    if (!bannerState.is(Blocks.BLACK_BANNER) &&
+                        !bannerState.is(Blocks.BLACK_WALL_BANNER)) {
+                        continue;
+                    }
+
+                    BlockEntity blockEntity = chunk.getBlockEntity(bannerPos);
+
+                    if (!(blockEntity instanceof BannerBlockEntity bannerBlockEntity)) continue;
+
+                    ItemStack bannerStack = bannerBlockEntity.getItem();
+                    bannerStack.hideTooltipPart(ItemStack.TooltipPart.ADDITIONAL);
+
+                    if (ItemStack.matches(bannerStack, swetBannerStack)) {
+                        return true;
                     }
                 }
             }
         }
+
         return false;
     }
 
