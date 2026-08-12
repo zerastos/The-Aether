@@ -33,7 +33,9 @@ public interface PhoenixArmor {
      * @see com.aetherteam.aether.event.listeners.abilities.ArmorAbilityListener#onEntityUpdate(LivingEvent.LivingTickEvent)
      */
     static void boostLavaSwimming(LivingEntity entity) {
-        if (EquipmentUtil.hasFullPhoenixSet(entity)) {
+        boolean fullSet = EquipmentUtil.hasFullPhoenixSet(entity);
+
+        if (fullSet) {
             entity.clearFire();
             if (entity.isInLava()) {
                 entity.resetFallDistance();
@@ -57,7 +59,8 @@ public interface PhoenixArmor {
                         1, 0.0, 0.0, 0.0, 0.0F);
             }
         }
-        if (!EquipmentUtil.hasFullPhoenixSet(entity) || !entity.isInLava()) {
+
+        if (!fullSet || !entity.isInLava()) {
             if (entity instanceof Player player) {
                 AetherPlayer.get(player).ifPresent((aetherPlayer) -> aetherPlayer.setPhoenixSubmergeLength(0.0));
             }
