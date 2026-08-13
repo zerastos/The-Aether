@@ -198,7 +198,9 @@ public class Swet extends Slime implements MountableMob {
     public void tick() {
         // Handle dissolving in water.
         if (this.isInWater()) {
-            this.spawnDissolveParticles();
+            if (!this.level().isClientSide() && this.tickCount % 2 == 0) {
+                this.spawnDissolveParticles();
+            }
             if (this.getWaterDamageScale() < 0.9F) {
                 this.setWaterDamageScale(this.getWaterDamageScale() + 0.02F);
             }
