@@ -219,7 +219,10 @@ public class Moa extends MountableAnimal implements WingedBird {
 			}
 		}
 		if (this.onGround()) { // Reset jumps when the Moa is on the ground.
-			this.setRemainingJumps(this.getMaxJumps());
+			int maxJumps = this.getMaxJumps();
+			if (this.getRemainingJumps() != maxJumps) {
+				this.setRemainingJumps(maxJumps);
+			}
 		}
 		if (this.getJumpCooldown() > 0) { // Handles jump reset behavior.
 			this.setJumpCooldown(this.getJumpCooldown() - 1);
@@ -264,8 +267,13 @@ public class Moa extends MountableAnimal implements WingedBird {
 				}
 			}
 		} else {
-			this.setHungry(false);
-			this.setAmountFed(0);
+			if (this.isHungry()) {
+				this.setHungry(false);
+			}
+
+			if (this.getAmountFed() != 0) {
+				this.setAmountFed(0);
+			}
 		}
 
 		// Handles rider tracking.
