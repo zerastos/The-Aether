@@ -131,8 +131,12 @@ public abstract class AbstractWhirlwind extends Mob {
         super.aiStep();
 
         // This code is used to move other entities around the Whirlwind.
-        List<Entity> entityList = this.level().getEntities(this, this.getBoundingBox().expandTowards(2.5, 2.5, 2.5))
-                .stream().filter((entity -> !entity.getType().is(AetherTags.Entities.WHIRLWIND_UNAFFECTED))).toList();
+        List<Entity> entityList = this.level().getEntities(
+                this,
+                this.getBoundingBox().expandTowards(2.5, 2.5, 2.5),
+                entity -> !entity.getType().is(AetherTags.Entities.WHIRLWIND_UNAFFECTED)
+        );
+        boolean insideBlock = !entityList.isEmpty() && !this.level().isEmptyBlock(this.blockPosition());
         for (Entity entity : entityList) {
             double x = (float) entity.getX();
             double y = (float) entity.getY() - entity.getMyRidingOffset() * 0.6F;
@@ -159,7 +163,7 @@ public abstract class AbstractWhirlwind extends Mob {
                 entity.setDeltaMovement(entity.getDeltaMovement().add(Math.sin(0.0175 * d3) * 0.01, entity.getDeltaMovement().y, Math.cos(0.0175 * d3) * 0.01));
             }
 
-            if (!this.level().isEmptyBlock(this.blockPosition())) {
+            if (insideBlock) {
                 this.lifeLeft -= 50;
             }
         }
