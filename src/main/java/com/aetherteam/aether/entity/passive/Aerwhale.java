@@ -344,16 +344,22 @@ public class Aerwhale extends FlyingMob {
 
         @Override
         public void tick() {
-            if (this.mob.isVehicle()) {
+            if (this.mob.isVehicle() || this.operation != Operation.MOVE_TO) {
                 return;
             }
+
             double x = this.getWantedX() - this.mob.getX();
             double y = this.getWantedY() - this.mob.getY();
             double z = this.getWantedZ() - this.mob.getZ();
-            double distance = Math.sqrt(x * x + z * z);
-            if (this.isColliding(new Vec3(x, y, z).normalize())) {
+
+            double directionLength = Math.sqrt(x * x + y * y + z * z);
+
+            if (directionLength <= 1.0E-7D || this.isColliding(x / directionLength, y / directionLength, z / directionLength)) {
                 this.operation = Operation.WAIT;
+                return;
             }
+
+            double distance = Math.sqrt(x * x + z * z);
 
             float xRotTarget = (float) (Mth.atan2(y, distance) * Mth.RAD_TO_DEG); // Pitch
             float xRot = Mth.wrapDegrees(this.mob.getXRot());
@@ -401,11 +407,11 @@ public class Aerwhale extends FlyingMob {
         /**
          * Checks if entity bounding box is not colliding with terrain
          */
-        private boolean isColliding(Vec3 pos) {
+        private boolean isColliding(double x, double y, double z) {
             AABB axisalignedbb = this.mob.getBoundingBox();
 
             for (int i = 1; i < 7; ++i) {
-                axisalignedbb = axisalignedbb.move(pos);
+                axisalignedbb = axisalignedbb.move(x, y, z);
                 if (!this.mob.level().noCollision(this.mob, axisalignedbb)) {
                     return true;
                 }
