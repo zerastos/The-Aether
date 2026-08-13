@@ -33,6 +33,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
@@ -40,6 +41,7 @@ import java.util.List;
 
 public abstract class AbstractWhirlwind extends Mob {
     public static final EntityDataAccessor<Integer> DATA_COLOR_ID = SynchedEntityData.defineId(AbstractWhirlwind.class, EntityDataSerializers.INT);
+    private static final byte DEATH_PARTICLES_EVENT = 60;
 
     private int lifeLeft;
     private int dropsTimer;
@@ -97,11 +99,15 @@ public abstract class AbstractWhirlwind extends Mob {
     @Override
     public void tick() {
         super.tick();
+
+       if (this.isDeadOrDying()) {
+            return;
+        }
+
         this.lifeLeft--;
-        if (!this.level().isClientSide()) {
-            if (this.lifeLeft <= 0 || this.isInFluidType()) {
-                this.discard();
-            }
+
+        if (!this.level().isClientSide() && (this.lifeLeft <= 0 || this.isInFluidType())) {
+            this.setHealth(0.0F);
         }
     }
 
@@ -110,25 +116,30 @@ public abstract class AbstractWhirlwind extends Mob {
      */
     @Override
     public void aiStep() {
-        if (!this.level().isClientSide()) {
-            if (this.verticalCollision && !this.verticalCollisionBelow) { // Marks the Whirlwind as stuck if it is colliding with a ceiling.
+        if (this.level().isClientSide()) {
+            this.spawnParticles();
+        } else if (!this.isDeadOrDying()) {
+            if (this.verticalCollision && !this.verticalCollisionBelow) {
+                // Marks the Whirlwind as stuck if it is colliding with a ceiling.
                 this.stuckTick += 4;
             } else if (this.stuckTick > 0) {
                 this.stuckTick--;
             }
 
-            if (this.getTarget() != null) { // Increases the timer to check when to create drops when a player is near.
+            // Increases the timer used to create drops while a player is nearby.
+            if (this.getTarget() != null) {
                 this.dropsTimer++;
             }
+
             if (this.dropsTimer >= 128) {
                 this.spawnDrops();
                 this.dropsTimer = 0;
             }
-        } else {
-            this.spawnParticles();
         }
 
         super.aiStep();
+
+        if (this.isDeadOrDying()) return;
 
         // This code is used to move other entities around the Whirlwind.
         List<Entity> entityList = this.level().getEntities(
@@ -199,13 +210,36 @@ public abstract class AbstractWhirlwind extends Mob {
      */
     @Override
     public void kill() {
-        this.remove(Entity.RemovalReason.KILLED);
+        if (this.isDeadOrDying()) return;
+
+        this.setHealth(0.0F);
         this.gameEvent(GameEvent.ENTITY_DIE);
     }
 
     public abstract void spawnParticles();
 
     public abstract ResourceLocation getLootLocation();
+
+    @Override
+    public AABB getBoundingBoxForCulling() {
+        AABB box = this.getBoundingBox();
+
+        return new AABB(
+            box.minX - 0.425,
+            box.minY,
+            box.minZ - 0.425,
+            box.maxX + 0.425,
+            box.maxY + 3.325,
+            box.maxZ + 0.425
+        );
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == DEATH_PARTICLES_EVENT) return;
+
+        super.handleEntityEvent(id);
+    }
 
     /**
      * @return The {@link Integer} for the decimal color of this Whirlwind.
