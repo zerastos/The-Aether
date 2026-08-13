@@ -354,7 +354,18 @@ public class Aerwhale extends FlyingMob {
 
             double directionLength = Math.sqrt(x * x + y * y + z * z);
 
-            if (directionLength <= 1.0E-7D || this.isColliding(x / directionLength, y / directionLength, z / directionLength)) {
+            if (directionLength <= 1.0E-7D) {
+                this.operation = Operation.WAIT;
+                return;
+            }
+
+            // Only run lookahead collisions every other tick, distributing Aerwhales across alternating ticks.
+            if (((this.mob.tickCount + this.mob.getId()) & 1) == 0
+                    && this.isColliding(
+                    x / directionLength,
+                    y / directionLength,
+                    z / directionLength
+            )) {
                 this.operation = Operation.WAIT;
                 return;
             }
